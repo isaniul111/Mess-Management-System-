@@ -98,3 +98,75 @@ CREATE POLICY "Admins can insert own profile"
   ON admins FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = auth_id);
+
+  -- Create members table
+CREATE TABLE IF NOT EXISTS members (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  hostel_id uuid NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  email text UNIQUE NOT NULL,
+  auth_id uuid UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  bazar_amount numeric DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_members_email ON members(email);
+CREATE INDEX IF NOT EXISTS idx_members_auth_id ON members(auth_id);
+CREATE INDEX IF NOT EXISTS idx_members_hostel_id ON members(hostel_id);
+
+-- Enable Row Level Security
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for members table
+CREATE POLICY "Admins can view their hostel members"
+  ON members FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.id = members.hostel_id
+      AND admins.auth_id = auth.uid()
+    )
+    OR auth.uid() = members.auth_id
+  );
+
+CREATE POLICY "Admins can insert members"
+  ON members FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.id = members.hostel_id
+      AND admins.auth_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Admins can update their hostel members"
+  ON members FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.id = members.hostel_id
+      AND admins.auth_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.id = members.hostel_id
+      AND admins.auth_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Admins can delete their hostel members"
+  ON members FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.id = members.hostel_id
+      AND admins.auth_id = auth.uid()
+    )
+  );
