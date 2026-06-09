@@ -10,7 +10,61 @@ export default function MemberNotices() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Theme Sync
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('memberTheme') !== 'light');
 
+  useEffect(() => {
+    const checkTheme = () => setIsDark(localStorage.getItem('memberTheme') !== 'light');
+    const interval = setInterval(checkTheme, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (profile) {
+      fetchNotices();
+    }
+  }, [profile]);
+
+  const fetchNotices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notices')
+        .select('*')
+        .eq('hostel_id', (profile as any).hostel_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNotices(data || []);
+    } catch (error) {
+      console.error('Error fetching notices:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Framer Motion Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
+  if (loading) {
+    return (
+      <MemberLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
+          <Activity className={`w-10 h-10 animate-pulse ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
+          <p className={`text-sm font-medium animate-pulse ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Fetching announcements...
+          </p>
+        </div>
+      </MemberLayout>
+    );
+  }
 
   return (
     <MemberLayout>
