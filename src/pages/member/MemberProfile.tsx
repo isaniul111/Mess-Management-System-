@@ -13,7 +13,61 @@ export default function MemberProfile() {
     confirmPassword: '',
   });
 
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
+  // Theme Sync
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('memberTheme') !== 'light');
+
+  useEffect(() => {
+    const checkTheme = () => setIsDark(localStorage.getItem('memberTheme') !== 'light');
+    const interval = setInterval(checkTheme, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage({ type: '', text: '' });
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'Passwords do not match.' });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (error) throw error;
+
+      setPasswordMessage({ type: 'success', text: 'Password changed successfully.' });
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+      
+      setTimeout(() => setPasswordMessage({ type: '', text: '' }), 3000);
+    } catch (error: any) {
+      setPasswordMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Framer Motion Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
 
   return (
     <MemberLayout>
