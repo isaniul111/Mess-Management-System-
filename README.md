@@ -6,7 +6,7 @@ This is a **Hostel Management System** project with Admin and User panels. It is
 
 ## Live Demo
 
-[View Live Demo] :https://mmsystemlive.netlify.app/login
+[View Live Demo] : https://mmsystemlive.netlify.app/login
 
 ---
 
