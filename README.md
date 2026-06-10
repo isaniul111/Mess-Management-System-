@@ -6,7 +6,7 @@ This is a **Hostel Management System** project with Admin and User panels. It is
 
 ## Live Demo
 
-[View Live Demo] :https://golden-melomakarona-175f77.netlify.app/
+[View Live Demo] :https://mmsystemlive.netlify.app/login
 
 ---
 
@@ -75,7 +75,7 @@ npm run dev
 ---
 
 ## Database Setup (Supabase)
-
+isaniul333@gmail.com
 1. Create a new project in [Supabase](https://supabase.com/).
 2. Create a PostgreSQL database for your hostel management system.
 3. Update your **.env** or configuration file with your Supabase URL and API Key.
